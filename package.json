@@ -1,0 +1,9 @@
+{
+  "author": "",
+  "name": "spotify-playlist-maker",
+  "description": "",
+  "version": "0.1",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

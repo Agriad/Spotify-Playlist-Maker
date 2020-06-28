@@ -8,7 +8,24 @@
   </head>
 
   <body>
-    <button onclick="">Test</button>
+    <button onclick="test()">Test</button>
     <button onclick="">Run Program</button>
   </body>
+
+  <!-- https://stackoverflow.com/questions/53897250/how-to-call-a-server-side-nodejs-function-using-client-side-javascript -->
+  <script>
+    function test() {
+      $.ajax({
+        type: 'GET',
+        url: 'http://localhost:80/test',
+        success: function(response) {
+          console.log("magenta");
+          console.log(response);
+        },
+        error: function(xhr, status, err) {
+          console.log(xhr.responseText);
+        }
+      });
+    }
+  </script>
 </html>

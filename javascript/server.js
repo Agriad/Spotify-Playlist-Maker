@@ -1,7 +1,8 @@
 /* Load the HTTP library */
 var http = require("http");
 var fs = require("fs");
-var app = require("app");
+var express = require("express");
+var app = express();
 
 var javascript = require("./javascript");
 var songPromise = require("./songPromise");
@@ -23,6 +24,12 @@ fs.readFile("../index.html", function (err, html) {
     })
     .listen(80);
 });
+
+app.get("/test", function(req, res) {
+  banana();
+});
+
+banana();
 
 function banana() {
   console.log("banana");
