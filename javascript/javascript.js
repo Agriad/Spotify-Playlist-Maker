@@ -1,9 +1,12 @@
-module.exports = {
-  test: test(),
-};
+// module.exports = {
+//   test: test(),
+// };
 
 function test() {
-  getSpotifySecret();
+    console.log("onion");
+//   let spotifySecret = getSpotifySecret();
+//   console.log(spotifySecret);
+    return "potato";
 }
 
 // // The main function that runs the entire program
@@ -62,10 +65,12 @@ function getSpotifySecret() {
   fs = require("fs");
   fs.readFile(file, "utf8", function (err, data) {
       if (err) {
+          console.log("error");
           return console.log(err);
       }
 
-      console.log(data);
+      console.log("fine");
+      return data;
   });
 }
 
