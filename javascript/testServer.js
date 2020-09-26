@@ -1,67 +1,21 @@
-// Created with the help of the example spotify code, specifically the authentication code method
-// https://github.com/spotify/web-api-auth-examples
+/**
+ * This is an example of a basic node.js script that performs
+ * the Authorization Code oAuth2 flow to authenticate against
+ * the Spotify Accounts.
+ *
+ * For more information, read
+ * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
+ */
 
-/* Load the HTTP library */
-var http = require("http");
-var fs = require("fs");
-var express = require("express");
+var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
-var app = express();
-var cors = require("cors");
+var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
-var javascript = require("./javascript");
-var songPromise = require("./songPromise");
-const { test } = require("./javascript");
-
-// Reads the html file to show it
-// fs.readFile("../index.html", function (err, html) {
-//   if (err) {
-//     throw err;
-//   }
-
-//   /* Create an HTTP server to handle responses */
-
-//   http
-//     .createServer(function (request, response) {
-//       response.writeHead(200, { "Content-Type": "text/html" });
-//       response.write(html);
-//       response.end();
-//     })
-//     .listen(80);
-// });
-
-// app.use(express.static(__dirname + '/public'))
-//    .use(cors())
-//    .use(cookieParser());
-
-// app.use(express.static("D:/Games/Programming/Git/Spotify-Playlist-Maker-2nd-Attempt/public"))
-//    .use(cors())
-//    .use(cookieParser());
-
-app.use(express.static(__dirname + "/../public"))
-   .use(cors())
-   .use(cookieParser());
-
-var client_id = "";
-var client_secret = "";
-var redirect_uri = "";
-var playlist_id = "";
-
-try {  
-  var data = fs.readFileSync('../secret/secret.txt', 'utf8');
-  var data_string = data.toString();
-  var data_words = data_string.split("\n");
-
-  client_id = data_words[0].substr(0, data_words[0].length - 1);
-  client_secret = data_words[1].substr(0, data_words[1].length - 1);
-  redirect_uri = data_words[2].substr(0, data_words[2].length - 1);
-  playlist_id = data_words[3];
-
-} catch(e) {
-  console.log('Error:', e.stack);
-}
+var client_id = '65552ec72e9a4f76a6637310b049891c'; // Your client id
+var client_secret = 'd0c6aa16c8484be4a201b2edf2a6b3c7'; // Your secret
+var redirect_uri = 'http://localhost:80/callback'; // Your redirect uri
 
 /**
  * Generates a random string containing numbers and letters
@@ -78,27 +32,31 @@ var generateRandomString = function(length) {
   return text;
 };
 
-// app.get('/one', function(request, response) {
-//   // test.test();
-//   response.writeHead(200, {"Content-Type": "text/plain"})
-//   response.write("golem");
-//   response.end();
-
-//   console.log(request);
-//   console.log("something");
-
-//   return response.get;
-// });
-
 var stateKey = 'spotify_auth_state';
 
+var app = express();
+
+app.use(express.static(__dirname + '/../public'))
+   .use(cors())
+   .use(cookieParser());
+
 app.get('/login', function(req, res) {
+
+  console.log("/login activated")
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
 
+  console.log('https://accounts.spotify.com/authorize?' +
+  querystring.stringify({
+    response_type: 'code',
+    client_id: client_id,
+    scope: scope,
+    redirect_uri: redirect_uri,
+    state: state
+  }));
+
   // your application requests authorization
-  // var scope = 'playlist-modify-private';
   var scope = 'user-read-private user-read-email';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -125,6 +83,7 @@ app.get('/callback', function(req, res) {
         error: 'state_mismatch'
       }));
   } else {
+
     res.clearCookie(stateKey);
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
@@ -172,4 +131,29 @@ app.get('/callback', function(req, res) {
   }
 });
 
-app.listen(80)
+// app.get('/refresh_token', function(req, res) {
+
+//   // requesting access token from refresh token
+//   var refresh_token = req.query.refresh_token;
+//   var authOptions = {
+//     url: 'https://accounts.spotify.com/api/token',
+//     headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+//     form: {
+//       grant_type: 'refresh_token',
+//       refresh_token: refresh_token
+//     },
+//     json: true
+//   };
+
+//   request.post(authOptions, function(error, response, body) {
+//     if (!error && response.statusCode === 200) {
+//       var access_token = body.access_token;
+//       res.send({
+//         'access_token': access_token
+//       });
+//     }
+//   });
+// });
+
+console.log('Listening on 80');
+app.listen(80);

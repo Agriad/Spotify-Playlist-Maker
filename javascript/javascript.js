@@ -2,12 +2,12 @@
 //   test: test(),
 // };
 
-function test() {
-    console.log("onion");
-//   let spotifySecret = getSpotifySecret();
-//   console.log(spotifySecret);
-    return "potato";
-}
+// function test() {
+//     console.log("onion");
+// //   let spotifySecret = getSpotifySecret();
+// //   console.log(spotifySecret);
+//     return "potato";
+// }
 
 // // The main function that runs the entire program
 // function spotifyAdd() {
