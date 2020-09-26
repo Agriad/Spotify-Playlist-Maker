@@ -10,35 +10,11 @@ var app = express();
 var cors = require("cors");
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+var nodeID3 = require("node-id3");
 
 var javascript = require("./javascript");
 var songPromise = require("./songPromise");
 const { test } = require("./javascript");
-
-// Reads the html file to show it
-// fs.readFile("../index.html", function (err, html) {
-//   if (err) {
-//     throw err;
-//   }
-
-//   /* Create an HTTP server to handle responses */
-
-//   http
-//     .createServer(function (request, response) {
-//       response.writeHead(200, { "Content-Type": "text/html" });
-//       response.write(html);
-//       response.end();
-//     })
-//     .listen(80);
-// });
-
-// app.use(express.static(__dirname + '/public'))
-//    .use(cors())
-//    .use(cookieParser());
-
-// app.use(express.static("D:/Games/Programming/Git/Spotify-Playlist-Maker-2nd-Attempt/public"))
-//    .use(cors())
-//    .use(cookieParser());
 
 app.use(express.static(__dirname + "/../public"))
    .use(cors())
@@ -59,7 +35,27 @@ try {
   redirect_uri = data_words[2].substr(0, data_words[2].length - 1);
   playlist_id = data_words[3];
 
-} catch(e) {
+} 
+catch(e) {
+  console.log('Error:', e.stack);
+}
+
+var song_list = []
+
+try {
+  var song_address = "D:/Music/My songs test";
+  var mp3_files = fs.readdirSync(song_address);
+
+  for (var i = 0; i < mp3_files.length; i++) {
+    var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
+    var song_title = tags.title;
+    var song_artist = tags.artist;
+    var song_album = tags.album;
+    var song_info = [song_title, song_artist, song_album];
+    song_list.push(song_info);
+  }
+} 
+catch(e) {
   console.log('Error:', e.stack);
 }
 
@@ -98,8 +94,8 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  // var scope = 'playlist-modify-private';
-  var scope = 'user-read-private user-read-email';
+  // var scope = 'playlist-read-collaborative playlist-modify-public playlist-read-private playlist-modify-private';
+  var scope = 'playlist-read-private playlist-modify-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -170,6 +166,11 @@ app.get('/callback', function(req, res) {
       }
     });
   }
+  add_to_playlist();
 });
+
+function add_to_playlist() {
+
+}
 
 app.listen(80)
