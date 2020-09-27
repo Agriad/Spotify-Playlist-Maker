@@ -137,8 +137,6 @@ app.get('/callback', function(req, res) {
     };
 
     new Promise(function (resolve, reject) {
-      var access_token_test = "";
-
       request.post(authOptions, function(error, response, body) {
         if (!error && response.statusCode === 200) {
   
@@ -146,8 +144,6 @@ app.get('/callback', function(req, res) {
               refresh_token = body.refresh_token;
   
             access_token_test = access_token;
-            // console.log(access_token);
-            // console.log(access_token_test);
   
           var options = {
             url: 'https://api.spotify.com/v1/me',
@@ -167,7 +163,7 @@ app.get('/callback', function(req, res) {
               refresh_token: refresh_token
             }));
 
-          resolve(access_token_test);
+          resolve(access_token);
         } else {
           res.redirect('/#' +
             querystring.stringify({
@@ -177,31 +173,22 @@ app.get('/callback', function(req, res) {
             reject("error");
         }
       });
-    }).then((access_token_test) => {
-      console.log(access_token_test);
-      testing(access_token_test);
+    }).then((access_token) => {
+      testing(access_token);
     });
   }
-  // start_playlist_edit(access_token);
-  // console.log("onion");
-  // console.log(access_token_test);
-  // testing(access_token_test);
 });
 
 function testing(access_token) {
-  // var authOptions = {
-  //   url: "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist",
-  //   headers: {
-  //     'Authorization': "Bearer " + access_token
-  //   }
-  // };
-
-  // request.get(authOptions, function(error, response, body) {
-  //   console.log(response);
-  // });
+  var xmlHttp = new XMLHttpRequest();
+  // xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist", false); // false for synchronous request
+  xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=get%20lucky%20daft%20punk&type=track&offset=0&limit=1", false); // false for synchronous request
+  xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+  xmlHttp.send();
+  // console.log(xmlHttp.responseText);
 
   var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist", false); // false for synchronous request
+  xmlHttp.open("POST", "POST https://api.spotify.com/v1/playlists/" + playlist_id + "/tracks" + "?uris=spotify%3Atrack%2ePFIvZKMe8zefATp9ofFA", false);
   xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
   xmlHttp.send();
   console.log(xmlHttp.responseText);
