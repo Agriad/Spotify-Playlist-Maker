@@ -11,6 +11,7 @@ var cors = require("cors");
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 var nodeID3 = require("node-id3");
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var javascript = require("./javascript");
 var songPromise = require("./songPromise");
@@ -135,42 +136,87 @@ app.get('/callback', function(req, res) {
       json: true
     };
 
-    request.post(authOptions, function(error, response, body) {
-      if (!error && response.statusCode === 200) {
+    new Promise(function (resolve, reject) {
+      var access_token_test = "";
 
-        var access_token = body.access_token,
-            refresh_token = body.refresh_token;
+      request.post(authOptions, function(error, response, body) {
+        if (!error && response.statusCode === 200) {
+  
+          var access_token = body.access_token,
+              refresh_token = body.refresh_token;
+  
+            access_token_test = access_token;
+            // console.log(access_token);
+            // console.log(access_token_test);
+  
+          var options = {
+            url: 'https://api.spotify.com/v1/me',
+            headers: { 'Authorization': 'Bearer ' + access_token },
+            json: true
+          };
+  
+          // use the access token to access the Spotify Web API
+          request.get(options, function(error, response, body) {
+            console.log(body);
+          });
+  
+          // we can also pass the token to the browser to make requests from there
+          res.redirect('/#' +
+            querystring.stringify({
+              access_token: access_token,
+              refresh_token: refresh_token
+            }));
 
-        var options = {
-          url: 'https://api.spotify.com/v1/me',
-          headers: { 'Authorization': 'Bearer ' + access_token },
-          json: true
-        };
-
-        // use the access token to access the Spotify Web API
-        request.get(options, function(error, response, body) {
-          console.log(body);
-        });
-
-        // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token
-          }));
-      } else {
-        res.redirect('/#' +
-          querystring.stringify({
-            error: 'invalid_token'
-          }));
-      }
+          resolve(access_token_test);
+        } else {
+          res.redirect('/#' +
+            querystring.stringify({
+              error: 'invalid_token'
+            }));
+          
+            reject("error");
+        }
+      });
+    }).then((access_token_test) => {
+      console.log(access_token_test);
+      testing(access_token_test);
     });
   }
-  add_to_playlist();
+  // start_playlist_edit(access_token);
+  // console.log("onion");
+  // console.log(access_token_test);
+  // testing(access_token_test);
 });
 
-function add_to_playlist() {
+function testing(access_token) {
+  // var authOptions = {
+  //   url: "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist",
+  //   headers: {
+  //     'Authorization': "Bearer " + access_token
+  //   }
+  // };
 
+  // request.get(authOptions, function(error, response, body) {
+  //   console.log(response);
+  // });
+
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist", false); // false for synchronous request
+  xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+  xmlHttp.send();
+  console.log(xmlHttp.responseText);
+}
+
+function start_playlist_edit(access_token) {
+  var songs = search_song(access_token, song_list)
+}
+
+function search_song(access_token, song_list) {
+  var song_code = [];
+
+  for (var i = 0; i < song_list.length; i++) {
+
+  }
 }
 
 app.listen(80)
