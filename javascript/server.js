@@ -35,7 +35,6 @@ try {
   client_secret = data_words[1].substr(0, data_words[1].length - 1);
   redirect_uri = data_words[2].substr(0, data_words[2].length - 1);
   playlist_id = data_words[3];
-
 } 
 catch(e) {
   console.log('Error:', e.stack);
@@ -195,14 +194,31 @@ function testing(access_token) {
 }
 
 function start_playlist_edit(access_token) {
-  var songs = search_song(access_token, song_list)
+  var songs = search_song(access_token, song_list);
 }
 
 function search_song(access_token, song_list) {
   var song_code = [];
+  var song_promises = [];
 
   for (var i = 0; i < song_list.length; i++) {
+    var search_text = "";
+    
+    for (var j = 0; j < song_list[i].length; j++) {
+      if (song_list[i][j] != null) {
+        search_text.push(song_list[i][j] + "%20");
+      }
+    }
 
+    var song_promise = new Promise(function (resolve, reject) {
+      xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=" + search_text + "&type=track&offset=0&limit=1", false); // false for synchronous request
+      xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+      xmlHttp.send();
+
+      resolve(xmlHttp.responseText);
+    });
+
+    song_promises.push(song_promise);
   }
 }
 
