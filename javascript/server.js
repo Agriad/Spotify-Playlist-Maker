@@ -182,6 +182,7 @@ app.get("/callback", function (req, res) {
       });
     }).then((access_token) => {
       // testing(access_token);
+      console.log("here 1");
       var song_promises = search_song(access_token, song_list);
       var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
       list_song_info(song_playlist_info);
@@ -262,6 +263,7 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
   }
 
   for (var i = 0; i < song_found.length; i++) {
+    var xmlHttp = new XMLHttpRequest();
     xmlHttp.open(
       "POST",
       "https://api.spotify.com/v1/playlists/" +
@@ -293,11 +295,12 @@ function search_song(access_token, song_list) {
 
     for (var j = 0; j < song_list[i].length; j++) {
       if (song_list[i][j] != null) {
-        search_text.push(song_list[i][j] + "%20");
+        search_text.concat(song_list[i][j] + "%20");
       }
     }
 
     var song_promise = new Promise(function (resolve, reject) {
+      var xmlHttp = new XMLHttpRequest();
       xmlHttp.open(
         "GET",
         "https://api.spotify.com/v1/search?q=" +
