@@ -181,7 +181,10 @@ app.get("/callback", function (req, res) {
         }
       });
     }).then((access_token) => {
-      testing(access_token);
+      // testing(access_token);
+      var song_promises = search_song(access_token, song_list);
+      var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
+      list_song_info(song_playlist_info);
     });
   }
 });
@@ -213,14 +216,22 @@ function testing(access_token) {
   console.log(xmlHttp.responseText);
 }
 
-function start_playlist_edit(access_token, song_list, playlist_id) {
-  var songs = search_song(access_token, song_list);
-  var found_not_found_songs = add_song(
-    access_token,
-    song_list,
-    songs,
-    playlist_id
-  );
+function list_song_info(song_playlist_info) {
+  for (var i = 0; i < song_playlist_info[0].length; i++) {
+    try {
+      fs.writeFile("../output/FoundList.txt", song_playlist_info[0][i]);
+    } catch (e) {
+      console.log("Error:", e.stack);
+    }
+  }
+
+  for (var i = 0; i < song_playlist_info[1].length; i++) {
+    try {
+      fs.writeFile("../output/NotFoundList.txt", song_playlist_info[1][i]);
+    } catch (e) {
+      console.log("Error:", e.stack);
+    }
+  }
 }
 
 function add_song(access_token, song_list, song_promises, playlist_id) {
@@ -240,7 +251,7 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
         title = track.name;
 
         if (artist == song_list[1] && title == song_list[0]) {
-          song_found.push(song_id);
+          song_found.push([song_id, song_list[i]]);
         } else {
           song_not_found.push(song_list[i]);
         }
@@ -256,13 +267,17 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
       "https://api.spotify.com/v1/playlists/" +
         playlist_id +
         "tracks?uris=spotify%3Atrack%3" +
-        song_found[i],
+        song_found[0][i],
       false
     ); // false for synchronous request
     xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
     xmlHttp.setRequestHeader("Accept: application/json");
     xmlHttp.send();
   }
+
+  var song_playlist_info = [song_found, song_not_found];
+
+  return song_playlist_info;
 }
 
 function search_song(access_token, song_list) {
