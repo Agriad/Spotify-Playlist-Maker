@@ -44,7 +44,8 @@ try {
 var song_list = [];
 
 try {
-  var song_address = "D:/Music/My songs test";
+  // var song_address = "D:/Music/My songs test";
+  var song_address = "D:/Music/My song another test";
   var mp3_files = fs.readdirSync(song_address);
 
   for (var i = 0; i < mp3_files.length; i++) {
@@ -182,7 +183,8 @@ app.get("/callback", function (req, res) {
       });
     }).then((access_token) => {
       // testing(access_token);
-      console.log("here 1");
+      // console.log("here 1");
+      console.log(song_list);
       var song_promises = search_song(access_token, song_list);
       var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
       list_song_info(song_playlist_info);
@@ -242,27 +244,63 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
   for (var i = 0; i < song_promises.length; i++) {
     song_promise = song_promises[i];
 
+    // sleep(1000).then();
+    sleep(500);
+    console.log(i);
+
     song_promise.then((response_text) => {
       json_text = JSON.parse(response_text);
-      track = json_text.tracks.items;
+      track = ""
 
-      if (track != null) {
-        song_id = track.id;
-        artist = track.album.artists.name;
-        title = track.name;
+      console.log("onion");
 
-        if (artist == song_list[1] && title == song_list[0]) {
-          song_found.push([song_id, song_list[i]]);
+      try {
+        track = json_text.tracks.items;
+        console.log(track);
+        if (track != null) {
+          console.log("happy");
+
+          var something = track[0].artists
+          console.log(something);
+
+          var song_id = track[0].id;
+          var artist = track[0].artists[0].name
+          var title = track[0].name;
+
+          console.log("a" + song_id + "a");
+          console.log("a" + artist + "a");
+          console.log("a" + song_list[0][1] + "a")
+          console.log("a" + title + "a");
+          console.log("a" + song_list[0][0] + "a")
+
+          if (artist == song_list[1]) {
+            console.log("artist success");
+          }
+
+          if (title == song_list[0]) {
+            console.log("title success");
+          }
+  
+          if (artist == song_list[0][1] && title == song_list[0][0]) {
+            console.log("something success");
+            song_found.push([song_id, song_list[i]]);
+          } else {
+            song_not_found.push(song_list[i]);
+          }
         } else {
           song_not_found.push(song_list[i]);
         }
-      } else {
+      } catch (error) {
         song_not_found.push(song_list[i]);
+        console.log("sad");
       }
     });
   }
 
   for (var i = 0; i < song_found.length; i++) {
+    console.log(playlist_id);
+    console.log(song_found[0][i])
+
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open(
       "POST",
@@ -288,16 +326,25 @@ function search_song(access_token, song_list) {
 
   for (var i = 0; i < song_list.length; i++) {
     if (counter % 5 == 0) {
-      sleep(500).then();
+      // sleep(500).then();
+      sleep(500);
     }
+
+    console.log("bolter")
 
     var search_text = "";
 
     for (var j = 0; j < song_list[i].length; j++) {
       if (song_list[i][j] != null) {
-        search_text.concat(song_list[i][j] + "%20");
+        console.log(song_list[i][j])
+        // search_text.concat(song_list[i][j] + "%20");
+        var text = song_list[i][j];
+        var replaced_text = text.split(" ").join("%20");
+        search_text = search_text + replaced_text + "%20";
       }
     }
+
+    console.log(search_text)
 
     var song_promise = new Promise(function (resolve, reject) {
       var xmlHttp = new XMLHttpRequest();
@@ -320,8 +367,16 @@ function search_song(access_token, song_list) {
   return song_promises;
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+// function sleep(ms) {
+//   return new Promise((resolve) => setTimeout(resolve, ms));
+// }
+
+function sleep(milliseconds) {
+  const date = Date.now();
+  let currentDate = null;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
 }
 
 app.listen(80);
