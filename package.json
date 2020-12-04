@@ -3,6 +3,9 @@
   "name": "spotify-playlist-maker",
   "description": "",
   "version": "0.1",
+  "nodemonConfig": {
+    "ignore": ["javascript/.*"]
+  },
   "dependencies": {
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
