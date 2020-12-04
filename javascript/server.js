@@ -44,8 +44,8 @@ try {
 var song_list = [];
 
 try {
-  // var song_address = "D:/Music/My songs test";
-  var song_address = "D:/Music/My song another test";
+  var song_address = "D:/Music/My songs test";
+  // var song_address = "D:/Music/My song another test";
   var mp3_files = fs.readdirSync(song_address);
 
   for (var i = 0; i < mp3_files.length; i++) {
@@ -75,18 +75,6 @@ var generateRandomString = function (length) {
   }
   return text;
 };
-
-// app.get('/one', function(request, response) {
-//   // test.test();
-//   response.writeHead(200, {"Content-Type": "text/plain"})
-//   response.write("golem");
-//   response.end();
-
-//   console.log(request);
-//   console.log("something");
-
-//   return response.get;
-// });
 
 var stateKey = "spotify_auth_state";
 
@@ -185,203 +173,130 @@ app.get("/callback", function (req, res) {
       // testing(access_token);
       // console.log("here 1");
       console.log(song_list);
-      var song_promises = search_song(access_token, song_list);
-      var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
-      console.log(song_playlist_info);
-      list_song_info(song_playlist_info);
+      // var song_promises = search_song(access_token, song_list, playlist_id);
+      // var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
+      // console.log(song_playlist_info);
+      // list_song_info(song_playlist_info);
+      search_song(access_token, song_list, playlist_id);
     });
   }
 });
 
-function testing(access_token) {
-  var xmlHttp = new XMLHttpRequest();
-  // xmlHttp.open("GET", "https://api.spotify.com/v1/search" + "?q=tania%20bowra&type=artist", false); // false for synchronous request
-  xmlHttp.open(
-    "GET",
-    "https://api.spotify.com/v1/search" +
-      "?q=get%20lucky%20daft%20punk&type=track&offset=0&limit=1",
-    false
-  ); // false for synchronous request
-  xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-  xmlHttp.send();
-  // console.log(xmlHttp.responseText);
-
-  var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open(
-    "POST",
-    "POST https://api.spotify.com/v1/playlists/" +
-      playlist_id +
-      "/tracks" +
-      "?uris=spotify%3Atrack%2ePFIvZKMe8zefATp9ofFA",
-    false
-  );
-  xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-  xmlHttp.send();
-  console.log(xmlHttp.responseText);
-}
-
-function list_song_info(song_playlist_info_promise) {
-  console.log("yay reaching somewhere");
-
-  song_playlist_info_promise.then((song_playlist_info) => {
-    for (var i = 0; i < song_playlist_info[0].length; i++) {
-      try {
-        fs.writeFile("../output/FoundList.txt", song_playlist_info[0][i]);
-      } catch (e) {
-        console.log("Error:", e.stack);
-      }
-    }
-  
-    for (var i = 0; i < song_playlist_info[1].length; i++) {
-      try {
-        fs.writeFile("../output/NotFoundList.txt", song_playlist_info[1][i]);
-      } catch (e) {
-        console.log("Error:", e.stack);
-      }
-    }
-  });
-}
-
-function add_song(access_token, song_list, song_promises, playlist_id) {
+function add_song(access_token, song_info, song_promise, playlist_id) {
   var song_found = [];
   var song_not_found = [];
-  var counter = 0
 
-  var parse_promise = new Promise(function (resolve, reject) {
-    for (var i = 0; i < song_promises.length; i++) {
-      song_promise = song_promises[i];
-      
-      if (counter % 5 == 0) {
-        sleep(500);
-      }
-      
-      console.log(i);
-  
-      song_promise.then((response_text) => {
-        json_text = JSON.parse(response_text);
-        track = ""
-  
-        console.log("onion");
-  
-        try {
-          track = json_text.tracks.items;
-          console.log(track);
-          if (track != null) {
-            console.log("happy");
-  
-            var something = track[0].artists
-            console.log(something);
-  
-            var song_id = track[0].id;
-            var artist = track[0].artists[0].name
-            var title = track[0].name;
-  
-            console.log("a" + song_id + "a");
-            console.log("a" + artist + "a");
-            console.log("a" + song_list[0][1] + "a")
-            console.log("a" + title + "a");
-            console.log("a" + song_list[0][0] + "a")
-  
-            if (artist == song_list[1]) {
-              console.log("artist success");
-            }
-  
-            if (title == song_list[0]) {
-              console.log("title success");
-            }
-    
-            if (artist == song_list[0][1] && title == song_list[0][0]) {
-              console.log("something success");
-              song_found.push([song_id, song_list[0]]);
-            } else {
-              song_not_found.push(song_list[0]);
-            }
-          } else {
-            song_not_found.push(song_list[0]);
-          }
-        } catch (error) {
-          song_not_found.push(song_list[0]);
-          console.log("sad");
+  console.log("pirarucu");
+  console.log(song_info);
+
+  song_promise.then((response_text) => {
+    console.log(response_text);
+    json_text = JSON.parse(response_text);
+    track = ""
+
+    console.log("onion");
+    console.log(song_info);
+
+    try {
+      track = json_text.tracks.items;
+      console.log(track);
+      if (track != null) {
+        console.log("happy");
+
+        var something = track[0].artists
+        console.log(something);
+
+        var song_id = track[0].id;
+        var artist = track[0].artists[0].name
+        var title = track[0].name;
+
+        console.log("a" + song_id + "a");
+        console.log("a" + artist + "a");
+        console.log("a" + song_info[1] + "a")
+        console.log("a" + title + "a");
+        console.log("a" + song_info[0] + "a")
+
+        if (artist == song_info[1]) {
+          console.log("artist success");
         }
-      });
 
-      counter = counter + 1;
-    }
+        if (title == song_info[0]) {
+          console.log("title success");
+        }
 
-    resolve([song_not_found, song_found]);
-  });
+        if (artist == song_info[1] && title == song_info[0]) {
+          console.log("something success");
 
-  parse_promise.then((add_info) => {
-    // var song_not_found = add_info[0];
-    // var song_found = add_info[1];
-
-    // console.log(song_not_found);
-    // console.log(song_found);
-
-    for (var i = 0; i < song_found.length; i++) {
-      console.log(playlist_id);
-      console.log(song_found[0][i])
-  
-      // var xmlHttp = new XMLHttpRequest();
-      // xmlHttp.open(
-      //   "POST",
-      //   "https://api.spotify.com/v1/playlists/" +
-      //     playlist_id +
-      //     "tracks?uris=spotify%3Atrack%3" +
-      //     song_found[0][i],
-      //   false
-      // ); // false for synchronous request
-      // xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-      // xmlHttp.setRequestHeader("Accept: application/json");
-      // xmlHttp.send();
+          new Promise(function (resolve, reject) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open(
+              "POST",
+              "https://api.spotify.com/v1/playlists/" +
+                playlist_id +
+                "/tracks?uris=spotify%3Atrack%3A" +
+                song_id,
+              false
+            ); // false for synchronous request
+            xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+            xmlHttp.setRequestHeader("Accept: application/json");
+            xmlHttp.send();
       
-
-      new Promise(function (resolve, reject) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open(
-          "POST",
-          "https://api.spotify.com/v1/playlists/" +
-            playlist_id +
-            "/tracks?uris=spotify%3Atrack%3A" +
-            song_found[0][i],
-          false
-        ); // false for synchronous request
-        xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-        xmlHttp.setRequestHeader("Accept: application/json");
-        xmlHttp.send();
-
-        resolve([xmlHttp.responseText, add_info]);
-      }).then((output) => {
-        console.log(output[0]);
-
-        var song_playlist_promise = new Promise(function (resolve, reject) {
-          resolve([song_found, song_not_found]);
-        });
-
-        console.log(song_found);
-        console.log(song_not_found);
-
-        return song_playlist_promise;
-      });
-    };
-  
-    // var song_playlist_promise = new Promise(function (resolve, reject) {
-    //   resolve([song_found, song_not_found]);
-    // });
-    // // var song_playlist_info = [song_found, song_not_found];
-  
-    // return song_playlist_promise;
+            resolve(xmlHttp.responseText);
+          }).then((output) => {
+            console.log(output);
+            list_song_info(song_info, true);
+          });
+        } else {
+          song_not_found.push(song_list[0]);
+          list_song_info(song_info, false);
+        }
+      } else {
+        song_not_found.push(song_list[0]);
+        list_song_info(song_info, false);
+      }
+    } catch (error) {
+      song_not_found.push(song_list[0]);
+      list_song_info(song_info, false);
+      console.log("sad");
+    }
   });
 }
 
-function search_song(access_token, song_list) {
-  var song_promises = [];
+function list_song_info(song_info, found) {
+  console.log("yay reaching somewhere");
+  console.log(song_info);
+  var text = ""
+
+  for (var i = 0; i < song_info.length; i++) {
+    if (song_info[i] != undefined) {
+      text = text + song_info[i] + " - ";
+    }
+  }
+
+  if (found) {
+    fs.appendFile("../output/FoundList.txt", text, function(error, result) {
+      if (error) {
+        console.log("Error:", e.stack);
+      }
+    });
+  } else {
+    fs.appendFile("../output/NotFoundList.txt", text, function(error, result) {
+      if (error) {
+        console.log("Error:", e.stack);
+      }
+    });
+  }
+}
+
+function search_song(access_token, song_list, playlist_id) {
   var counter = 0;
 
   for (var i = 0; i < song_list.length; i++) {
-    if (counter % 5 == 0) {
-      sleep(500);
-    }
+    // if (counter % 5 == 0) {
+    //   sleep(500);
+    // }
+
+    sleep(500)
 
     console.log("bolter")
 
@@ -413,10 +328,12 @@ function search_song(access_token, song_list) {
       resolve(xmlHttp.responseText);
     });
 
-    song_promises.push(song_promise);
-  }
+    // song_promise.then((something) => {
+    //   console.log(something);
+    // });
 
-  return song_promises;
+    add_song(access_token, song_list[i], song_promise, playlist_id);
+  }
 }
 
 function sleep(milliseconds) {
