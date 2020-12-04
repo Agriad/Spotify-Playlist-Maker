@@ -187,6 +187,7 @@ app.get("/callback", function (req, res) {
       console.log(song_list);
       var song_promises = search_song(access_token, song_list);
       var song_playlist_info = add_song(access_token, song_list, song_promises, playlist_id);
+      console.log(song_playlist_info);
       list_song_info(song_playlist_info);
     });
   }
@@ -244,12 +245,16 @@ function list_song_info(song_playlist_info_promise) {
 function add_song(access_token, song_list, song_promises, playlist_id) {
   var song_found = [];
   var song_not_found = [];
+  var counter = 0
 
   var parse_promise = new Promise(function (resolve, reject) {
     for (var i = 0; i < song_promises.length; i++) {
       song_promise = song_promises[i];
-  
-      sleep(500);
+      
+      if (counter % 5 == 0) {
+        sleep(500);
+      }
+      
       console.log(i);
   
       song_promise.then((response_text) => {
@@ -299,17 +304,19 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
           console.log("sad");
         }
       });
+
+      counter = counter + 1;
     }
 
     resolve([song_not_found, song_found]);
   });
 
   parse_promise.then((add_info) => {
-    var song_not_found = add_info[0];
-    var song_found = add_info[1];
+    // var song_not_found = add_info[0];
+    // var song_found = add_info[1];
 
-    console.log(song_not_found);
-    console.log(song_found);
+    // console.log(song_not_found);
+    // console.log(song_found);
 
     for (var i = 0; i < song_found.length; i++) {
       console.log(playlist_id);
@@ -327,13 +334,15 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
       // xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
       // xmlHttp.setRequestHeader("Accept: application/json");
       // xmlHttp.send();
+      
+
       new Promise(function (resolve, reject) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open(
           "POST",
           "https://api.spotify.com/v1/playlists/" +
             playlist_id +
-            "tracks?uris=spotify%3Atrack%3" +
+            "/tracks?uris=spotify%3Atrack%3A" +
             song_found[0][i],
           false
         ); // false for synchronous request
@@ -341,18 +350,27 @@ function add_song(access_token, song_list, song_promises, playlist_id) {
         xmlHttp.setRequestHeader("Accept: application/json");
         xmlHttp.send();
 
-        resolve(xmlHttp.responseText);
+        resolve([xmlHttp.responseText, add_info]);
       }).then((output) => {
-        console.log(output);
+        console.log(output[0]);
+
+        var song_playlist_promise = new Promise(function (resolve, reject) {
+          resolve([song_found, song_not_found]);
+        });
+
+        console.log(song_found);
+        console.log(song_not_found);
+
+        return song_playlist_promise;
       });
     };
   
-    var song_playlist_promise = new Promise(function (resolve, reject) {
-      resolve([song_found, song_not_found]);
-    });
-    // var song_playlist_info = [song_found, song_not_found];
+    // var song_playlist_promise = new Promise(function (resolve, reject) {
+    //   resolve([song_found, song_not_found]);
+    // });
+    // // var song_playlist_info = [song_found, song_not_found];
   
-    return song_playlist_promise;
+    // return song_playlist_promise;
   });
 }
 
@@ -387,7 +405,7 @@ function search_song(access_token, song_list) {
         "https://api.spotify.com/v1/search?q=" +
           search_text +
           "&type=track&offset=0&limit=1",
-        false
+        true
       ); // false for synchronous request
       xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
       xmlHttp.send();
