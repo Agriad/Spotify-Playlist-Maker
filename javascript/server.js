@@ -239,7 +239,7 @@ function add_song(access_token, song_info, song_promise, playlist_id, counter) {
         //   console.log("title success");
         // }
 
-        if (artist == song_info[1] && title == song_info[0]) {
+        if (artist.toLowerCase() == song_info[1].toLowerCase() && title.toLowerCase() == song_info[0].toLowerCase()) {
           // console.log("something success");
 
           new Promise(function (resolve, reject) {
