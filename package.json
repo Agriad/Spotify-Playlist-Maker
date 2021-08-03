@@ -1,10 +1,17 @@
 {
   "author": "",
   "name": "spotify-playlist-maker",
-  "description": "",
-  "version": "0.1",
+  "description": "Spotify automation",
+  "license": "MIT",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd javascript && node server.js"
+  },
   "nodemonConfig": {
-    "ignore": ["javascript/.*"]
+    "ignore": [
+      "javascript/.*"
+    ]
   },
   "dependencies": {
     "cookie-parser": "^1.4.5",

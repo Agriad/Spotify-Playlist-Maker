@@ -31,6 +31,6 @@ Takes local mp3 files and adds them to spotify playlist by searching the artist 
 "PLAYLIST ID"  
 
 4. Inside `javascript/server.js` you will find `var song_address = "D:/Music/My songs";`, change `"D:/Music/My songs";` into the location that you want the program to look at.
-5. Run `node javascript/server.js`.
-6. In your browser go to `localhost:80`
+5. Run `npm start` in the root folder or `node server.js` in the javascript folder.
+6. In your browser go to `localhost:8000`
 7. Click on `Test` button.
