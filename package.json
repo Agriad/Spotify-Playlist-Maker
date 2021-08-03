@@ -1,7 +1,7 @@
 {
   "author": "",
   "name": "spotify-playlist-maker",
-  "description": "",
+  "description": "Spotify automation",
   "license": "MIT",
   "version": "1.0.0",
   "nodemonConfig": {
