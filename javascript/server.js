@@ -13,11 +13,6 @@ var cookieParser = require("cookie-parser");
 var nodeID3 = require("node-id3");
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-var javascript = require("./javascript");
-var songPromise = require("./songPromise");
-const { test } = require("./javascript");
-const { response } = require("express");
-
 app
   .use(express.static(__dirname + "/../public"))
   .use(cors())
@@ -33,9 +28,9 @@ try {
   var data_string = data.toString();
   var data_words = data_string.split("\n");
 
-  client_id = data_words[0].substr(0, data_words[0].length - 1);
-  client_secret = data_words[1].substr(0, data_words[1].length - 1);
-  redirect_uri = data_words[2].substr(0, data_words[2].length - 1);
+  client_id = data_words[0].substr(0, data_words[0].length);
+  client_secret = data_words[1].substr(0, data_words[1].length);
+  redirect_uri = data_words[2].substr(0, data_words[2].length);
   playlist_id = data_words[3];
 } catch (e) {
   console.log("Error:", e.stack);
@@ -44,7 +39,7 @@ try {
 var song_list = [];
 
 try {
-  var song_address = "D:/Music/My songs";
+  var song_address = "../../my songs";
   var mp3_files = fs.readdirSync(song_address);
 
   for (var i = 0; i < mp3_files.length; i++) {

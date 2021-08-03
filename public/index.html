@@ -1,33 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
 
-    <title>Spotify Automatic Playlist Maker</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  </head>
+<head>
+  <meta charset="utf-8" />
 
-  <body>
-    <button onclick="one()">Test</button>
-    <button onclick="">Run Program</button>
-    <a href="/login">Testing</a>
-    <a href="/one">One</a>
-  </body>
+  <title>Spotify Automatic Playlist Maker</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
 
-  <!-- https://stackoverflow.com/questions/53897250/how-to-call-a-server-side-nodejs-function-using-client-side-javascript -->
-  <script>
-    function one() {
-      $.ajax({
-        type: 'GET',
-        url: '/one',
-        success: function(response) {
-          console.log("magenta");
-          console.log(response);
-        },
-        error: function(xhr, status, err) {
-          console.log(xhr.responseText);
-        }
-      });
-    }
-  </script>
+<body>
+  <a href="/login">Login to Spotify</a>
+</body>
+
 </html>
