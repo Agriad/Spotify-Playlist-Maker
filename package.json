@@ -2,9 +2,11 @@
   "author": "",
   "name": "spotify-playlist-maker",
   "description": "",
-  "version": "0.1",
+  "version": "1.0.0",
   "nodemonConfig": {
-    "ignore": ["javascript/.*"]
+    "ignore": [
+      "javascript/.*"
+    ]
   },
   "dependencies": {
     "cookie-parser": "^1.4.5",
