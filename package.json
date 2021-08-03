@@ -5,6 +5,9 @@
   "license": "MIT",
   "version": "1.0.0",
   "private": true,
+  "scripts": {
+    "start": "cd javascript && node server.js"
+  },
   "nodemonConfig": {
     "ignore": [
       "javascript/.*"
