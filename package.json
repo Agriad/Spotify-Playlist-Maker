@@ -2,6 +2,7 @@
   "author": "",
   "name": "spotify-playlist-maker",
   "description": "",
+  "license": "MIT",
   "version": "1.0.0",
   "nodemonConfig": {
     "ignore": [
