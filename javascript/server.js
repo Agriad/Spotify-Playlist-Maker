@@ -2,19 +2,19 @@
 // https://github.com/spotify/web-api-auth-examples
 
 /* Load the HTTP library */
-var http = require("http");
-var fs = require("fs");
-var express = require("express");
-var request = require("request"); // "Request" library
-var app = express();
-var cors = require("cors");
-var querystring = require("querystring");
-var cookieParser = require("cookie-parser");
-var nodeID3 = require("node-id3");
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const fs = require("fs");
+const express = require("express");
+const request = require("request"); // "Request" library
+const app = express();
+const cors = require("cors");
+const querystring = require("querystring");
+const cookieParser = require("cookie-parser");
+const nodeID3 = require("node-id3");
+const path = require("path");
+const functions = require("./functions");
 
 app
-  .use(express.static(__dirname + "/../public"))
+  .use(express.static(__dirname + "/../public/index"))
   .use(cors())
   .use(cookieParser());
 
@@ -37,6 +37,7 @@ try {
 }
 
 var song_list = [];
+var current_access_token = "";
 
 try {
   var song_address = "../../my songs";
@@ -85,13 +86,13 @@ app.get("/login", function (req, res) {
   var scope = "playlist-read-private playlist-modify-private";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
-      querystring.stringify({
-        response_type: "code",
-        client_id: client_id,
-        scope: scope,
-        redirect_uri: redirect_uri,
-        state: state,
-      })
+    querystring.stringify({
+      response_type: "code",
+      client_id: client_id,
+      scope: scope,
+      redirect_uri: redirect_uri,
+      state: state,
+    })
   );
 });
 
@@ -106,9 +107,9 @@ app.get("/callback", function (req, res) {
   if (state === null || state !== storedState) {
     res.redirect(
       "/#" +
-        querystring.stringify({
-          error: "state_mismatch",
-        })
+      querystring.stringify({
+        error: "state_mismatch",
+      })
     );
   } else {
     res.clearCookie(stateKey);
@@ -146,169 +147,33 @@ app.get("/callback", function (req, res) {
             console.log(body);
           });
 
-          // we can also pass the token to the browser to make requests from there
-          res.redirect(
-            "/#" +
-              querystring.stringify({
-                access_token: access_token,
-                refresh_token: refresh_token,
-              })
-          );
+          res.sendFile(path.join(__dirname, "../public/spotify_options/spotifyoptions.html"));
 
           resolve(access_token);
         } else {
           res.redirect(
             "/#" +
-              querystring.stringify({
-                error: "invalid_token",
-              })
+            querystring.stringify({
+              error: "invalid_token",
+            })
           );
 
           reject("error");
         }
       });
     }).then((access_token) => {
+      current_access_token = access_token;
       console.log(song_list);
       console.log(access_token);
-      console.log("starting song adding");
-      sleep(500);
-      search_song(access_token, song_list, playlist_id);
     });
   }
 });
 
-function add_song(access_token, song_info, song_promise, playlist_id, counter) {
-  if (counter % 5 == 0) {
-    sleep(500);
-  }
-
-  song_promise.then((response_text) => {
-    if (counter % 100 == 0) {
-      console.log("adding song: " + counter);
-    }
-
-    try {
-      json_text = JSON.parse(response_text);
-      track = json_text.tracks.items;
-
-      if (track != null) {
-        var song_id = track[0].id;
-        var artist = track[0].artists[0].name
-        var title = track[0].name;
-
-        if (artist.toLowerCase() == song_info[1].toLowerCase() && title.toLowerCase() == song_info[0].toLowerCase()) {
-          new Promise(function (resolve, reject) {
-            var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open(
-              "POST",
-              "https://api.spotify.com/v1/playlists/" +
-                playlist_id +
-                "/tracks?uris=spotify%3Atrack%3A" +
-                song_id,
-              false
-            ); // false for synchronous request
-            xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-            xmlHttp.setRequestHeader("Accept: application/json");
-            xmlHttp.send();
-      
-            resolve(xmlHttp.responseText);
-          }).then((output) => {
-            list_song_info(song_info, true);
-          });
-        } else {
-          list_song_info(song_info, false);
-        }
-      } else {
-        list_song_info(song_info, false);
-      }
-    } catch (error) {
-      console.log(error);
-      console.log(song_info);
-      list_song_info(song_info, false);
-    }
-  });
-}
-
-function list_song_info(song_info, found) {
-  var text = ""
-
-  for (var i = 0; i < song_info.length; i++) {
-    if (song_info[i] != undefined) {
-      text = text + song_info[i] + " - ";
-    }
-  }
-
-  text = text + "\n";
-
-  if (found) {
-    fs.appendFile("../output/FoundList.txt", text, function(error, result) {
-      if (error) {
-        console.log("Error:", e.stack);
-      }
-    });
-  } else {
-    fs.appendFile("../output/NotFoundList.txt", text, function(error, result) {
-      if (error) {
-        console.log("Error:", e.stack);
-      }
-    });
-  }
-}
-
-function search_song(access_token, song_list, playlist_id) {
-  console.log("starting song search");
-
-  for (var i = 0; i < song_list.length; i++) {
-    if (i % 5 == 0) {
-      sleep(1000);
-    }
-    if (i % 100 == 0) {
-      console.log("search song: " + i);
-    }
-
-    var search_text = "";
-
-    for (var j = 0; j < song_list[i].length; j++) {
-      if (song_list[i][j] != null) {
-        var text = song_list[i][j];
-        var ascii_text = text.replace(/[^\x00-\x7F]/g, "");
-        var replaced_text = ascii_text.split(" ").join("%20");
-        if (j < song_list[i].length - 1) {
-          search_text = search_text + replaced_text + "%20";
-        } else {
-          search_text = search_text + replaced_text;
-        }
-      }
-    }
-
-    var song_promise = new Promise(function (resolve, reject) {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open(
-        "GET",
-        "https://api.spotify.com/v1/search?q=" +
-          search_text +
-          "&type=track&offset=0&limit=1",
-        false
-      ); // false for synchronous request
-      xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
-      xmlHttp.send();
-
-      resolve(xmlHttp.responseText);
-    }).catch((error) => {
-      console.log(error);
-    });
-
-    add_song(access_token, song_list[i], song_promise, playlist_id, i);
-  }
-}
-
-function sleep(milliseconds) {
-  const date = Date.now();
-  let currentDate = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
-}
+app.get("/add_songs", function (req, res) {
+  console.log("starting song adding");
+  functions.sleep(500);
+  functions.search_song(current_access_token, song_list, playlist_id);
+});
 
 app.listen(8000);
 console.log("Running");
