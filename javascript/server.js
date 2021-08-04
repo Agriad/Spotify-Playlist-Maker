@@ -15,12 +15,20 @@ const functions = require("./functions");
 
 app.use(express.static(__dirname + "/../public/index"))
     .use(cors())
-    .use(cookieParser());
+    .use(cookieParser())
+    .use(express.json())
+    .use(
+        express.urlencoded({
+            extended: true,
+        })
+    );
 
 var client_id = "";
 var client_secret = "";
-var redirect_uri = "";
+var redirect_uri = "http://localhost:8000/callback";
 var playlist_id = "";
+var song_list = [];
+var current_access_token = "";
 
 try {
     var data = fs.readFileSync("../secret/secret.txt", "utf8");
@@ -32,30 +40,7 @@ try {
     redirect_uri = data_words[2].substr(0, data_words[2].length);
     playlist_id = data_words[3];
 } catch (e) {
-    console.log("Error:", e.stack);
-}
-
-var song_list = [];
-var current_access_token = "";
-
-try {
-    var song_address = "../../my songs";
-    var mp3_files = fs.readdirSync(song_address);
-
-    for (var i = 0; i < mp3_files.length; i++) {
-        var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
-        var song_title = tags.title;
-        var song_artist = tags.artist;
-        var song_album = tags.album;
-        var song_info = [song_title, song_artist, song_album];
-        song_list.push(song_info);
-
-        if (i % 100 == 0) {
-            console.log("parsing song: " + i);
-        }
-    }
-} catch (e) {
-    console.log("Error:", e.stack);
+    console.log("Using input field");
 }
 
 /**
@@ -76,7 +61,11 @@ var generateRandomString = function (length) {
 
 var stateKey = "spotify_auth_state";
 
-app.get("/login", function (req, res) {
+app.post("/login", function (req, res) {
+    client_id = req.body.client_id;
+    client_secret = req.body.client_secret;
+    console.log(client_id);
+    console.log(client_secret);
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -92,6 +81,12 @@ app.get("/login", function (req, res) {
                 redirect_uri: redirect_uri,
                 state: state,
             })
+    );
+});
+
+app.get("/login", function (req, res) {
+    res.sendFile(
+        path.join(__dirname, "../public/spotify_options/spotifyoptions.html")
     );
 });
 
@@ -175,10 +170,33 @@ app.get("/callback", function (req, res) {
     }
 });
 
-app.get("/add_songs", function (req, res) {
+app.post("/add_songs", function (req, res) {
     console.log("starting song adding");
+    try {
+        var song_address = req.body.song_location;
+        var mp3_files = fs.readdirSync(song_address);
+
+        for (var i = 0; i < mp3_files.length; i++) {
+            var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
+            var song_title = tags.title;
+            var song_artist = tags.artist;
+            var song_album = tags.album;
+            var song_info = [song_title, song_artist, song_album];
+            song_list.push(song_info);
+
+            if (i % 100 == 0) {
+                console.log("parsing song: " + i);
+            }
+        }
+    } catch (e) {
+        console.log("Error:", e.stack);
+    }
     functions.sleep(500);
-    functions.search_song(current_access_token, song_list, playlist_id);
+    functions.search_song(
+        current_access_token,
+        song_list,
+        req.body.playlist_id
+    );
 });
 
 app.listen(8000);

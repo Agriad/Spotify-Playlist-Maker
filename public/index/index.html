@@ -8,6 +8,15 @@
     </head>
 
     <body>
-        <a href="/login">Login to Spotify</a>
+        <div>
+            Login to Spotify
+            <form method="POST" action="/login">
+                <label for="client_id">Client ID</label>
+                <input type="text" name="client_id" />
+                <label for="client_secret">Client Secret</label>
+                <input type="text" name="client_secret" />
+                <input type="submit" value="Login" />
+            </form>
+        </div>
     </body>
 </html>

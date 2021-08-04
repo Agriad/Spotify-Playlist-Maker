@@ -1,4 +1,5 @@
-secret/secret.txt
+secret/*
 node_modules/
 output/FoundList.txt
 output/NotFoundList.txt
+.vscode
