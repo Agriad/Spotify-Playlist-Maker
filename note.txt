@@ -1,1 +1,3 @@
-Prettier with tab = 4 spaces
+Prettier with tab = 4 spaces.
+Synchronous to make it easier to keep order.
+maybe add option for user to choose.
