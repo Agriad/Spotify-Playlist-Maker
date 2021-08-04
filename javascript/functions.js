@@ -70,6 +70,7 @@ const add_song = function (
 
 const list_playlist_song = function (playlist_info) {
     console.log("printing playlist to text");
+    console.log(playlist_info);
 
     for (let i = 0; i < playlist_info.length; i++) {
         if (i % 100 == 0) {
@@ -129,7 +130,6 @@ const list_song_info = function (song_info, found) {
 
 const playlist_to_text = function (access_token, playlist_id) {
     console.log("starting playlist to text transfer");
-    var song_list = [];
 
     // ask how many songs in playlist
     new Promise(function (resolve, reject) {
@@ -157,7 +157,8 @@ const playlist_to_text = function (access_token, playlist_id) {
             var song_total = json_text.total;
 
             for (var index = 0; index < song_total; index += 100) {
-                console.log("retrieving song: " + 0);
+                console.log("retrieving song: " + index);
+
                 sleep(500);
                 new Promise(function (resolve, reject) {
                     var xmlHttp = new XMLHttpRequest();
@@ -165,8 +166,8 @@ const playlist_to_text = function (access_token, playlist_id) {
                         "GET",
                         "https://api.spotify.com/v1/playlists/" +
                             playlist_id +
-                            "/tracks?limit=100&offset=" +
-                            0,
+                            "/tracks?market=SE&limit=100&offset=" +
+                            index,
                         false
                     );
 
@@ -218,12 +219,22 @@ const playlist_to_text = function (access_token, playlist_id) {
                                 title = "";
                             }
 
-                            song_list.push([artist, title, album]);
+                            var text =
+                                artist + " - " + title + " - " + album + "\n";
+                            fs.appendFile(
+                                "../output/SongList.txt",
+                                text,
+                                function (error, result) {
+                                    if (error) {
+                                        console.log("Error:", e.stack);
+                                    }
+                                }
+                            );
                         }
-
-                        list_playlist_song(song_list);
                     });
             }
+
+            console.log("Done");
         });
 };
 
