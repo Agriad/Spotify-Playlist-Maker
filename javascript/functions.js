@@ -68,6 +68,32 @@ const add_song = function (
     });
 };
 
+const list_playlist_song = function (playlist_info) {
+    console.log("printing playlist to text");
+    console.log(playlist_info);
+
+    for (let i = 0; i < playlist_info.length; i++) {
+        if (i % 100 == 0) {
+            console.log("printing song: " + i);
+        }
+
+        var text =
+            playlist_info[i][0] +
+            " - " +
+            playlist_info[i][1] +
+            " - " +
+            playlist_info[i][2] +
+            "\n";
+        fs.appendFile("../output/SongList.txt", text, function (error, result) {
+            if (error) {
+                console.log("Error:", e.stack);
+            }
+        });
+    }
+
+    console.log("Done");
+};
+
 const list_song_info = function (song_info, found) {
     var text = "";
 
@@ -100,6 +126,116 @@ const list_song_info = function (song_info, found) {
             }
         );
     }
+};
+
+const playlist_to_text = function (access_token, playlist_id) {
+    console.log("starting playlist to text transfer");
+
+    // ask how many songs in playlist
+    new Promise(function (resolve, reject) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open(
+            "GET",
+            "https://api.spotify.com/v1/playlists/" +
+                playlist_id +
+                "/tracks?fields=total",
+            false
+        );
+
+        xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+        xmlHttp.send();
+
+        resolve(xmlHttp.responseText);
+    })
+        .catch((error) => {
+            console.log("error");
+            console.log(error);
+        })
+        // keep asking for the next 100 songs in playlist
+        .then((total_data) => {
+            json_text = JSON.parse(total_data);
+            var song_total = json_text.total;
+
+            for (var index = 0; index < song_total; index += 100) {
+                console.log("retrieving song: " + index);
+
+                sleep(500);
+                new Promise(function (resolve, reject) {
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.open(
+                        "GET",
+                        "https://api.spotify.com/v1/playlists/" +
+                            playlist_id +
+                            "/tracks?market=SE&limit=100&offset=" +
+                            index,
+                        false
+                    );
+
+                    xmlHttp.setRequestHeader(
+                        "Authorization",
+                        "Bearer " + access_token
+                    );
+                    xmlHttp.send();
+
+                    resolve(xmlHttp.responseText);
+                })
+                    .catch((error) => {
+                        console.log("error");
+                        console.log(error);
+                    })
+                    // add the information to a list
+                    .then((playlist_data) => {
+                        json_text = JSON.parse(playlist_data);
+                        var current_song_list = json_text.items;
+
+                        for (var i = 0; i < current_song_list.length; i++) {
+                            var artist = "";
+                            var title = "";
+                            var album = "";
+
+                            try {
+                                album = current_song_list[i].track.album.name;
+                            } catch (error) {
+                                album = "";
+                            }
+
+                            try {
+                                var artist_list =
+                                    current_song_list[i].track.artists;
+
+                                for (let j = 0; j < artist_list.length; j++) {
+                                    artist += artist_list[j].name;
+                                    artist += ", ";
+                                }
+
+                                artist = artist.substr(0, artist.length - 2);
+                            } catch (error) {
+                                artist = "";
+                            }
+
+                            try {
+                                title = current_song_list[i].track.name;
+                            } catch (error) {
+                                title = "";
+                            }
+
+                            var text =
+                                artist + " - " + title + " - " + album + "\n";
+                            fs.appendFile(
+                                "../output/SongList.txt",
+                                text,
+                                function (error, result) {
+                                    if (error) {
+                                        console.log("Error:", e.stack);
+                                    }
+                                }
+                            );
+                        }
+                    });
+            }
+
+            console.log("Done");
+        });
 };
 
 const search_song = function (access_token, song_list, playlist_id) {
@@ -157,4 +293,10 @@ const sleep = function (milliseconds) {
     } while (currentDate - date < milliseconds);
 };
 
-module.exports = { add_song, list_song_info, search_song, sleep };
+module.exports = {
+    add_song,
+    list_song_info,
+    playlist_to_text,
+    search_song,
+    sleep,
+};

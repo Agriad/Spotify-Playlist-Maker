@@ -13,6 +13,8 @@ const nodeID3 = require("node-id3");
 const path = require("path");
 const functions = require("./functions");
 
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+
 app.use(express.static(__dirname + "/../public/index"))
     .use(cors())
     .use(cookieParser())
@@ -71,7 +73,8 @@ app.post("/login", function (req, res) {
 
     // your application requests authorization
     // var scope = 'playlist-read-collaborative playlist-modify-public playlist-read-private playlist-modify-private';
-    var scope = "playlist-read-private playlist-modify-private";
+    var scope =
+        "playlist-modify-public playlist-read-collaborative playlist-read-private playlist-modify-private";
     res.redirect(
         "https://accounts.spotify.com/authorize?" +
             querystring.stringify({
@@ -197,6 +200,10 @@ app.post("/add_songs", function (req, res) {
         song_list,
         req.body.playlist_id
     );
+});
+
+app.post("/playlist_text", function (req, res) {
+    functions.playlist_to_text(current_access_token, req.body.playlist_id);
 });
 
 app.listen(8000);

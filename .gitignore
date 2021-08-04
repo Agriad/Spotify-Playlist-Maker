@@ -1,5 +1,7 @@
-secret/*
+.vscode
+javascript/.*
 node_modules/
 output/FoundList.txt
 output/NotFoundList.txt
-.vscode
+output/SongList.txt
+secret/*
