@@ -13,10 +13,9 @@ const nodeID3 = require("node-id3");
 const path = require("path");
 const functions = require("./functions");
 
-app
-  .use(express.static(__dirname + "/../public/index"))
-  .use(cors())
-  .use(cookieParser());
+app.use(express.static(__dirname + "/../public/index"))
+    .use(cors())
+    .use(cookieParser());
 
 var client_id = "";
 var client_secret = "";
@@ -24,39 +23,39 @@ var redirect_uri = "";
 var playlist_id = "";
 
 try {
-  var data = fs.readFileSync("../secret/secret.txt", "utf8");
-  var data_string = data.toString();
-  var data_words = data_string.split("\n");
+    var data = fs.readFileSync("../secret/secret.txt", "utf8");
+    var data_string = data.toString();
+    var data_words = data_string.split("\n");
 
-  client_id = data_words[0].substr(0, data_words[0].length);
-  client_secret = data_words[1].substr(0, data_words[1].length);
-  redirect_uri = data_words[2].substr(0, data_words[2].length);
-  playlist_id = data_words[3];
+    client_id = data_words[0].substr(0, data_words[0].length);
+    client_secret = data_words[1].substr(0, data_words[1].length);
+    redirect_uri = data_words[2].substr(0, data_words[2].length);
+    playlist_id = data_words[3];
 } catch (e) {
-  console.log("Error:", e.stack);
+    console.log("Error:", e.stack);
 }
 
 var song_list = [];
 var current_access_token = "";
 
 try {
-  var song_address = "../../my songs";
-  var mp3_files = fs.readdirSync(song_address);
+    var song_address = "../../my songs";
+    var mp3_files = fs.readdirSync(song_address);
 
-  for (var i = 0; i < mp3_files.length; i++) {
-    var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
-    var song_title = tags.title;
-    var song_artist = tags.artist;
-    var song_album = tags.album;
-    var song_info = [song_title, song_artist, song_album];
-    song_list.push(song_info);
+    for (var i = 0; i < mp3_files.length; i++) {
+        var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
+        var song_title = tags.title;
+        var song_artist = tags.artist;
+        var song_album = tags.album;
+        var song_info = [song_title, song_artist, song_album];
+        song_list.push(song_info);
 
-    if (i % 100 == 0) {
-      console.log("parsing song: " + i);
+        if (i % 100 == 0) {
+            console.log("parsing song: " + i);
+        }
     }
-  }
 } catch (e) {
-  console.log("Error:", e.stack);
+    console.log("Error:", e.stack);
 }
 
 /**
@@ -65,114 +64,121 @@ try {
  * @return {string} The generated string
  */
 var generateRandomString = function (length) {
-  var text = "";
-  var possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var text = "";
+    var possible =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (var i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
 };
 
 var stateKey = "spotify_auth_state";
 
 app.get("/login", function (req, res) {
-  var state = generateRandomString(16);
-  res.cookie(stateKey, state);
+    var state = generateRandomString(16);
+    res.cookie(stateKey, state);
 
-  // your application requests authorization
-  // var scope = 'playlist-read-collaborative playlist-modify-public playlist-read-private playlist-modify-private';
-  var scope = "playlist-read-private playlist-modify-private";
-  res.redirect(
-    "https://accounts.spotify.com/authorize?" +
-    querystring.stringify({
-      response_type: "code",
-      client_id: client_id,
-      scope: scope,
-      redirect_uri: redirect_uri,
-      state: state,
-    })
-  );
+    // your application requests authorization
+    // var scope = 'playlist-read-collaborative playlist-modify-public playlist-read-private playlist-modify-private';
+    var scope = "playlist-read-private playlist-modify-private";
+    res.redirect(
+        "https://accounts.spotify.com/authorize?" +
+            querystring.stringify({
+                response_type: "code",
+                client_id: client_id,
+                scope: scope,
+                redirect_uri: redirect_uri,
+                state: state,
+            })
+    );
 });
 
 app.get("/callback", function (req, res) {
-  // your application requests refresh and access tokens
-  // after checking the state parameter
+    // your application requests refresh and access tokens
+    // after checking the state parameter
 
-  var code = req.query.code || null;
-  var state = req.query.state || null;
-  var storedState = req.cookies ? req.cookies[stateKey] : null;
+    var code = req.query.code || null;
+    var state = req.query.state || null;
+    var storedState = req.cookies ? req.cookies[stateKey] : null;
 
-  if (state === null || state !== storedState) {
-    res.redirect(
-      "/#" +
-      querystring.stringify({
-        error: "state_mismatch",
-      })
-    );
-  } else {
-    res.clearCookie(stateKey);
-    var authOptions = {
-      url: "https://accounts.spotify.com/api/token",
-      form: {
-        code: code,
-        redirect_uri: redirect_uri,
-        grant_type: "authorization_code",
-      },
-      headers: {
-        Authorization:
-          "Basic " +
-          new Buffer.from(client_id + ":" + client_secret).toString("base64"),
-      },
-      json: true,
-    };
-
-    new Promise(function (resolve, reject) {
-      request.post(authOptions, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-          var access_token = body.access_token,
-            refresh_token = body.refresh_token;
-
-          access_token_test = access_token;
-
-          var options = {
-            url: "https://api.spotify.com/v1/me",
-            headers: { Authorization: "Bearer " + access_token },
-            json: true,
-          };
-
-          // use the access token to access the Spotify Web API
-          request.get(options, function (error, response, body) {
-            console.log(body);
-          });
-
-          res.sendFile(path.join(__dirname, "../public/spotify_options/spotifyoptions.html"));
-
-          resolve(access_token);
-        } else {
-          res.redirect(
+    if (state === null || state !== storedState) {
+        res.redirect(
             "/#" +
-            querystring.stringify({
-              error: "invalid_token",
-            })
-          );
+                querystring.stringify({
+                    error: "state_mismatch",
+                })
+        );
+    } else {
+        res.clearCookie(stateKey);
+        var authOptions = {
+            url: "https://accounts.spotify.com/api/token",
+            form: {
+                code: code,
+                redirect_uri: redirect_uri,
+                grant_type: "authorization_code",
+            },
+            headers: {
+                Authorization:
+                    "Basic " +
+                    new Buffer.from(client_id + ":" + client_secret).toString(
+                        "base64"
+                    ),
+            },
+            json: true,
+        };
 
-          reject("error");
-        }
-      });
-    }).then((access_token) => {
-      current_access_token = access_token;
-      console.log(song_list);
-      console.log(access_token);
-    });
-  }
+        new Promise(function (resolve, reject) {
+            request.post(authOptions, function (error, response, body) {
+                if (!error && response.statusCode === 200) {
+                    var access_token = body.access_token,
+                        refresh_token = body.refresh_token;
+
+                    access_token_test = access_token;
+
+                    var options = {
+                        url: "https://api.spotify.com/v1/me",
+                        headers: { Authorization: "Bearer " + access_token },
+                        json: true,
+                    };
+
+                    // use the access token to access the Spotify Web API
+                    request.get(options, function (error, response, body) {
+                        console.log(body);
+                    });
+
+                    res.sendFile(
+                        path.join(
+                            __dirname,
+                            "../public/spotify_options/spotifyoptions.html"
+                        )
+                    );
+
+                    resolve(access_token);
+                } else {
+                    res.redirect(
+                        "/#" +
+                            querystring.stringify({
+                                error: "invalid_token",
+                            })
+                    );
+
+                    reject("error");
+                }
+            });
+        }).then((access_token) => {
+            current_access_token = access_token;
+            console.log(song_list);
+            console.log(access_token);
+        });
+    }
 });
 
 app.get("/add_songs", function (req, res) {
-  console.log("starting song adding");
-  functions.sleep(500);
-  functions.search_song(current_access_token, song_list, playlist_id);
+    console.log("starting song adding");
+    functions.sleep(500);
+    functions.search_song(current_access_token, song_list, playlist_id);
 });
 
 app.listen(8000);

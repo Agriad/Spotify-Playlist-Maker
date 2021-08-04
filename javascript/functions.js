@@ -4,7 +4,13 @@
 const fs = require("fs");
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-const add_song = function (access_token, song_info, song_promise, playlist_id, counter) {
+const add_song = function (
+    access_token,
+    song_info,
+    song_promise,
+    playlist_id,
+    counter
+) {
     if (counter % 5 == 0) {
         sleep(500);
     }
@@ -20,21 +26,27 @@ const add_song = function (access_token, song_info, song_promise, playlist_id, c
 
             if (track != null) {
                 var song_id = track[0].id;
-                var artist = track[0].artists[0].name
+                var artist = track[0].artists[0].name;
                 var title = track[0].name;
 
-                if (artist.toLowerCase() == song_info[1].toLowerCase() && title.toLowerCase() == song_info[0].toLowerCase()) {
+                if (
+                    artist.toLowerCase() == song_info[1].toLowerCase() &&
+                    title.toLowerCase() == song_info[0].toLowerCase()
+                ) {
                     new Promise(function (resolve, reject) {
                         var xmlHttp = new XMLHttpRequest();
                         xmlHttp.open(
                             "POST",
                             "https://api.spotify.com/v1/playlists/" +
-                            playlist_id +
-                            "/tracks?uris=spotify%3Atrack%3A" +
-                            song_id,
+                                playlist_id +
+                                "/tracks?uris=spotify%3Atrack%3A" +
+                                song_id,
                             false
                         ); // false for synchronous request
-                        xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+                        xmlHttp.setRequestHeader(
+                            "Authorization",
+                            "Bearer " + access_token
+                        );
                         xmlHttp.setRequestHeader("Accept: application/json");
                         xmlHttp.send();
 
@@ -54,10 +66,10 @@ const add_song = function (access_token, song_info, song_promise, playlist_id, c
             list_song_info(song_info, false);
         }
     });
-}
+};
 
 const list_song_info = function (song_info, found) {
-    var text = ""
+    var text = "";
 
     for (var i = 0; i < song_info.length; i++) {
         if (song_info[i] != undefined) {
@@ -68,19 +80,27 @@ const list_song_info = function (song_info, found) {
     text = text + "\n";
 
     if (found) {
-        fs.appendFile("../output/FoundList.txt", text, function (error, result) {
-            if (error) {
-                console.log("Error:", e.stack);
+        fs.appendFile(
+            "../output/FoundList.txt",
+            text,
+            function (error, result) {
+                if (error) {
+                    console.log("Error:", e.stack);
+                }
             }
-        });
+        );
     } else {
-        fs.appendFile("../output/NotFoundList.txt", text, function (error, result) {
-            if (error) {
-                console.log("Error:", e.stack);
+        fs.appendFile(
+            "../output/NotFoundList.txt",
+            text,
+            function (error, result) {
+                if (error) {
+                    console.log("Error:", e.stack);
+                }
             }
-        });
+        );
     }
-}
+};
 
 const search_song = function (access_token, song_list, playlist_id) {
     console.log("starting song search");
@@ -113,8 +133,8 @@ const search_song = function (access_token, song_list, playlist_id) {
             xmlHttp.open(
                 "GET",
                 "https://api.spotify.com/v1/search?q=" +
-                search_text +
-                "&type=track&offset=0&limit=1",
+                    search_text +
+                    "&type=track&offset=0&limit=1",
                 false
             ); // false for synchronous request
             xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
@@ -127,7 +147,7 @@ const search_song = function (access_token, song_list, playlist_id) {
 
         add_song(access_token, song_list[i], song_promise, playlist_id, i);
     }
-}
+};
 
 const sleep = function (milliseconds) {
     const date = Date.now();
@@ -135,6 +155,6 @@ const sleep = function (milliseconds) {
     do {
         currentDate = Date.now();
     } while (currentDate - date < milliseconds);
-}
+};
 
-module.exports = { add_song, list_song_info, search_song, sleep }
+module.exports = { add_song, list_song_info, search_song, sleep };
