@@ -2,4 +2,5 @@ secret/*
 node_modules/
 output/FoundList.txt
 output/NotFoundList.txt
+output/SongList.txt
 .vscode
