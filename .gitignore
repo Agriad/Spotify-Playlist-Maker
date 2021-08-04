@@ -1,3 +1,4 @@
 secret/secret.txt
 node_modules/
-output/*
+output/FoundList.txt
+output/NotFoundList.txt
