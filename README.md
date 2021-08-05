@@ -25,7 +25,6 @@ Spotify automation program with multiple functions.
 
 <a name="guide"></a>
 ## Guide
-### Option 1
 1. Go to [Spotify for Developers](https://developer.spotify.com/dashboard/) and create an app for this program.
 1. In the settings for the app add `http://localhost:8000/callback` as the redirect 
 1. Run `npm start` in the root folder or `node server.js` in the javascript folder.
