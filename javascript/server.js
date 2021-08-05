@@ -49,13 +49,13 @@ app.post("/login", function (req, res) {
         "playlist-modify-public playlist-read-collaborative playlist-read-private playlist-modify-private";
     res.redirect(
         "https://accounts.spotify.com/authorize?" +
-            querystring.stringify({
-                response_type: "code",
-                client_id: clientID,
-                scope: scope,
-                redirect_uri: redirectURI,
-                state: state,
-            })
+            new URLSearchParams([
+                ["response_type", "code"],
+                ["client_id", clientID],
+                ["scope", scope],
+                ["redirect_uri", redirectURI],
+                ["state", state],
+            ])
     );
 });
 
@@ -80,12 +80,7 @@ app.get("/callback", function (req, res) {
     var storedState = req.cookies ? req.cookies[stateKey] : null;
 
     if (state === null || state !== storedState) {
-        res.redirect(
-            "/#" +
-                querystring.stringify({
-                    error: "state_mismatch",
-                })
-        );
+        res.redirect("/#" + new URLSearchParams([["error", "state_mismatch"]]));
     } else {
         res.clearCookie(stateKey);
         var authOptions = {
@@ -132,10 +127,7 @@ app.get("/callback", function (req, res) {
                     resolve(accessToken);
                 } else {
                     res.redirect(
-                        "/#" +
-                            querystring.stringify({
-                                error: "invalid_token",
-                            })
+                        "/#" + new URLSearchParams([[error, "invalid_token"]])
                     );
 
                     reject("error");
