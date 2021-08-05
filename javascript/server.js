@@ -45,22 +45,6 @@ try {
     console.log("Using input field");
 }
 
-/**
- * Generates a random string containing numbers and letters
- * @param  {number} length The length of the string
- * @return {string} The generated string
- */
-var generateRandomString = function (length) {
-    var text = "";
-    var possible =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for (var i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-};
-
 var stateKey = "spotify_auth_state";
 
 app.post("/login", function (req, res) {
@@ -68,7 +52,7 @@ app.post("/login", function (req, res) {
     client_secret = req.body.client_secret;
     console.log(client_id);
     console.log(client_secret);
-    var state = generateRandomString(16);
+    var state = functions.generateRandomString(16);
     res.cookie(stateKey, state);
 
     // your application requests authorization

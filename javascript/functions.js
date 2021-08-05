@@ -68,6 +68,22 @@ const add_song = function (
     });
 };
 
+/**
+ * Generates a random string containing numbers and letters
+ * @param  {number} length The length of the string
+ * @return {string} The generated string
+ */
+ const generateRandomString = function (length) {
+    var text = "";
+    var possible =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
+
 const list_playlist_song = function (playlist_info) {
     console.log("printing playlist to text");
     console.log(playlist_info);
@@ -295,6 +311,7 @@ const sleep = function (milliseconds) {
 
 module.exports = {
     add_song,
+    generateRandomString,
     list_song_info,
     playlist_to_text,
     search_song,
