@@ -29,22 +29,7 @@ var clientID = "";
 var clientSecret = "";
 var redirectURI = "http://localhost:8000/callback";
 var songList = [];
-var playlistID = "";
 var currentAccessToken = "";
-
-try {
-    var data = fs.readFileSync("../secret/secret.txt", "utf8");
-    var dataString = data.toString();
-    var dataWords = dataString.split("\n");
-
-    clientID = dataWords[0].substr(0, dataWords[0].length);
-    clientSecret = dataWords[1].substr(0, dataWords[1].length);
-    redirectURI = dataWords[2].substr(0, dataWords[2].length);
-    playlistID = dataWords[3];
-} catch (e) {
-    console.log("Using input field");
-}
-
 var stateKey = "spotify_auth_state";
 
 app.post("/login", function (req, res) {
@@ -176,15 +161,11 @@ app.post("/add_songs", function (req, res) {
         console.log("Error:", e.stack);
     }
     functions.sleep(500);
-    functions.searchSong(
-        currentAccessToken,
-        songList,
-        req.body.playlist_id
-    );
+    functions.searchSong(currentAccessToken, songList, req.body.playlist_id);
 });
 
 app.post("/playlist_text", function (req, res) {
-    functions.playlistToText (currentAccessToken, req.body.playlist_id);
+    functions.playlistToText(currentAccessToken, req.body.playlist_id);
 });
 
 app.listen(8000);

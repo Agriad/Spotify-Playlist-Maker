@@ -73,7 +73,7 @@ const addSong = function (
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
- const generateRandomString = function (length) {
+const generateRandomString = function (length) {
     var text = "";
     var possible =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -82,32 +82,6 @@ const addSong = function (
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
-};
-
-const list_playlist_song = function (playlist_info) {
-    console.log("printing playlist to text");
-    console.log(playlist_info);
-
-    for (let i = 0; i < playlist_info.length; i++) {
-        if (i % 100 == 0) {
-            console.log("printing song: " + i);
-        }
-
-        var text =
-            playlist_info[i][0] +
-            " - " +
-            playlist_info[i][1] +
-            " - " +
-            playlist_info[i][2] +
-            "\n";
-        fs.appendFile("../output/SongList.txt", text, function (error, result) {
-            if (error) {
-                console.log("Error:", e.stack);
-            }
-        });
-    }
-
-    console.log("Done");
 };
 
 const listSongInfo = function (songInfo, found) {
@@ -168,8 +142,8 @@ const playlistToText = function (accessToken, playlistID) {
             console.log(error);
         })
         // keep asking for the next 100 songs in playlist
-        .then((total_data) => {
-            jsonObject = JSON.parse(total_data);
+        .then((totalData) => {
+            jsonObject = JSON.parse(totalData);
             var songTotal = jsonObject.total;
 
             for (var index = 0; index < songTotal; index += 100) {
