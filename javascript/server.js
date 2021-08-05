@@ -32,6 +32,9 @@ var songList = [];
 var currentAccessToken = "";
 var stateKey = "spotify_auth_state";
 
+/**
+ * Retrieves the login information and then redirects to the Spotify login.
+ */
 app.post("/login", function (req, res) {
     clientID = req.body.client_id;
     clientSecret = req.body.client_secret;
@@ -56,12 +59,18 @@ app.post("/login", function (req, res) {
     );
 });
 
+/**
+ * After returning from Spotify login then send the page with automation options.
+ */
 app.get("/login", function (req, res) {
     res.sendFile(
         path.join(__dirname, "../public/spotify_options/spotifyoptions.html")
     );
 });
 
+/**
+ * Callback from Spotify login. Parses the information to retrieve the access token.
+ */
 app.get("/callback", function (req, res) {
     // your application requests refresh and access tokens
     // after checking the state parameter
@@ -139,6 +148,9 @@ app.get("/callback", function (req, res) {
     }
 });
 
+/**
+ * When the user selects to add songs then retrieves the inputs and calls searchSong.
+ */
 app.post("/add_songs", function (req, res) {
     console.log("starting song adding");
     try {
@@ -164,6 +176,9 @@ app.post("/add_songs", function (req, res) {
     functions.searchSong(currentAccessToken, songList, req.body.playlist_id);
 });
 
+/**
+ * When the user selects to add songs then retrieves the inputs and calls playlistToText.
+ */
 app.post("/playlist_text", function (req, res) {
     functions.playlistToText(currentAccessToken, req.body.playlist_id);
 });

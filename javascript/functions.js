@@ -248,7 +248,7 @@ const playlistToText = function (accessToken, playlistID) {
 
 /**
  * Searches the song on Spotify and then calls addSong.
- * @param {String} accessToken Access token from Spotify. 
+ * @param {String} accessToken Access token from Spotify.
  * @param {List} songList 2D list of strings containing the artist, title, and album.
  * @param {String} playlistID ID of the playlist.
  */
