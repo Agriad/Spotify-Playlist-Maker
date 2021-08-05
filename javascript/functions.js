@@ -4,6 +4,14 @@
 const fs = require("fs");
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
+/**
+ * Adds the specified song into the targeted Spotify playlist if the mp3 information and Spotify information matches.
+ * @param {String} accessToken Access token from Spotify.
+ * @param {Object} songInfo 2D list of strings containing the artist, title, and album.
+ * @param {Promise} songPromise The search Promise of the song.
+ * @param {String} playlistID ID of the playlist.
+ * @param {Number} counter Index of the song.
+ */
 const addSong = function (
     accessToken,
     songInfo,
@@ -69,9 +77,9 @@ const addSong = function (
 };
 
 /**
- * Generates a random string containing numbers and letters
- * @param  {number} length The length of the string
- * @return {string} The generated string
+ * Generates a random string containing numbers and letters.
+ * @param  {Number} length The length of the string.
+ * @return {String} The generated string.
  */
 const generateRandomString = function (length) {
     var text = "";
@@ -84,6 +92,11 @@ const generateRandomString = function (length) {
     return text;
 };
 
+/**
+ * Adds the song information to different text file depending if it was found or not.
+ * @param {Object} songInfo 2D list of strings containing the artist, title, and album.
+ * @param {Boolean} found Tells whether the song is found or not in Spotify.
+ */
 const listSongInfo = function (songInfo, found) {
     var text = "";
 
@@ -118,6 +131,11 @@ const listSongInfo = function (songInfo, found) {
     }
 };
 
+/**
+ * Retrieves the playlist, extract the artist, title, and album, and then prints into a text file.
+ * @param {String} accessToken Access token from Spotify.
+ * @param {String} playlistID ID of the playlist.
+ */
 const playlistToText = function (accessToken, playlistID) {
     console.log("starting playlist to text transfer");
 
@@ -228,6 +246,12 @@ const playlistToText = function (accessToken, playlistID) {
         });
 };
 
+/**
+ * Searches the song on Spotify and then calls addSong.
+ * @param {String} accessToken Access token from Spotify. 
+ * @param {List} songList 2D list of strings containing the artist, title, and album.
+ * @param {String} playlistID ID of the playlist.
+ */
 const searchSong = function (accessToken, songList, playlistID) {
     console.log("starting song search");
 
@@ -275,6 +299,10 @@ const searchSong = function (accessToken, songList, playlistID) {
     }
 };
 
+/**
+ * A sleep function in milliseconds.
+ * @param {Number} milliseconds Number of milliseconds.
+ */
 const sleep = function (milliseconds) {
     const date = Date.now();
     let currentDate = null;
