@@ -25,22 +25,22 @@ app.use(express.static(__dirname + "/../public/index"))
         })
     );
 
-var client_id = "";
-var client_secret = "";
-var redirect_uri = "http://localhost:8000/callback";
-var playlist_id = "";
-var song_list = [];
-var current_access_token = "";
+var clientID = "";
+var clientSecret = "";
+var redirectURI = "http://localhost:8000/callback";
+var songList = [];
+var playlistID = "";
+var currentAccessToken = "";
 
 try {
     var data = fs.readFileSync("../secret/secret.txt", "utf8");
-    var data_string = data.toString();
-    var data_words = data_string.split("\n");
+    var dataString = data.toString();
+    var dataWords = dataString.split("\n");
 
-    client_id = data_words[0].substr(0, data_words[0].length);
-    client_secret = data_words[1].substr(0, data_words[1].length);
-    redirect_uri = data_words[2].substr(0, data_words[2].length);
-    playlist_id = data_words[3];
+    clientID = dataWords[0].substr(0, dataWords[0].length);
+    clientSecret = dataWords[1].substr(0, dataWords[1].length);
+    redirectURI = dataWords[2].substr(0, dataWords[2].length);
+    playlistID = dataWords[3];
 } catch (e) {
     console.log("Using input field");
 }
@@ -48,10 +48,10 @@ try {
 var stateKey = "spotify_auth_state";
 
 app.post("/login", function (req, res) {
-    client_id = req.body.client_id;
-    client_secret = req.body.client_secret;
-    console.log(client_id);
-    console.log(client_secret);
+    clientID = req.body.client_id;
+    clientSecret = req.body.client_secret;
+    console.log(clientID);
+    console.log(clientSecret);
     var state = functions.generateRandomString(16);
     res.cookie(stateKey, state);
 
@@ -63,9 +63,9 @@ app.post("/login", function (req, res) {
         "https://accounts.spotify.com/authorize?" +
             querystring.stringify({
                 response_type: "code",
-                client_id: client_id,
+                client_id: clientID,
                 scope: scope,
-                redirect_uri: redirect_uri,
+                redirect_uri: redirectURI,
                 state: state,
             })
     );
@@ -98,13 +98,13 @@ app.get("/callback", function (req, res) {
             url: "https://accounts.spotify.com/api/token",
             form: {
                 code: code,
-                redirect_uri: redirect_uri,
+                redirect_uri: redirectURI,
                 grant_type: "authorization_code",
             },
             headers: {
                 Authorization:
                     "Basic " +
-                    new Buffer.from(client_id + ":" + client_secret).toString(
+                    new Buffer.from(clientID + ":" + clientSecret).toString(
                         "base64"
                     ),
             },
@@ -114,14 +114,12 @@ app.get("/callback", function (req, res) {
         new Promise(function (resolve, reject) {
             request.post(authOptions, function (error, response, body) {
                 if (!error && response.statusCode === 200) {
-                    var access_token = body.access_token,
-                        refresh_token = body.refresh_token;
-
-                    access_token_test = access_token;
+                    var accessToken = body.access_token,
+                        refreshToken = body.refresh_token;
 
                     var options = {
                         url: "https://api.spotify.com/v1/me",
-                        headers: { Authorization: "Bearer " + access_token },
+                        headers: { Authorization: "Bearer " + accessToken },
                         json: true,
                     };
 
@@ -137,7 +135,7 @@ app.get("/callback", function (req, res) {
                         )
                     );
 
-                    resolve(access_token);
+                    resolve(accessToken);
                 } else {
                     res.redirect(
                         "/#" +
@@ -149,10 +147,9 @@ app.get("/callback", function (req, res) {
                     reject("error");
                 }
             });
-        }).then((access_token) => {
-            current_access_token = access_token;
-            console.log(song_list);
-            console.log(access_token);
+        }).then((accessToken) => {
+            currentAccessToken = accessToken;
+            console.log(accessToken);
         });
     }
 });
@@ -160,16 +157,16 @@ app.get("/callback", function (req, res) {
 app.post("/add_songs", function (req, res) {
     console.log("starting song adding");
     try {
-        var song_address = req.body.song_location;
-        var mp3_files = fs.readdirSync(song_address);
+        var songAddress = req.body.song_location;
+        var mp3Files = fs.readdirSync(songAddress);
 
-        for (var i = 0; i < mp3_files.length; i++) {
-            var tags = nodeID3.read(song_address + "/" + mp3_files[i]);
-            var song_title = tags.title;
-            var song_artist = tags.artist;
-            var song_album = tags.album;
-            var song_info = [song_title, song_artist, song_album];
-            song_list.push(song_info);
+        for (var i = 0; i < mp3Files.length; i++) {
+            var tags = nodeID3.read(songAddress + "/" + mp3Files[i]);
+            var songTitle = tags.title;
+            var songArtist = tags.artist;
+            var songAlbum = tags.album;
+            var songInfo = [songTitle, songArtist, songAlbum];
+            songList.push(songInfo);
 
             if (i % 100 == 0) {
                 console.log("parsing song: " + i);
@@ -180,14 +177,14 @@ app.post("/add_songs", function (req, res) {
     }
     functions.sleep(500);
     functions.search_song(
-        current_access_token,
-        song_list,
+        currentAccessToken,
+        songList,
         req.body.playlist_id
     );
 });
 
 app.post("/playlist_text", function (req, res) {
-    functions.playlist_to_text(current_access_token, req.body.playlist_id);
+    functions.playlist_to_text(currentAccessToken, req.body.playlist_id);
 });
 
 app.listen(8000);
