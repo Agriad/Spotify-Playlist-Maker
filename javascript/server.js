@@ -176,7 +176,7 @@ app.post("/add_songs", function (req, res) {
         console.log("Error:", e.stack);
     }
     functions.sleep(500);
-    functions.search_song(
+    functions.searchSong(
         currentAccessToken,
         songList,
         req.body.playlist_id
@@ -184,7 +184,7 @@ app.post("/add_songs", function (req, res) {
 });
 
 app.post("/playlist_text", function (req, res) {
-    functions.playlist_to_text(currentAccessToken, req.body.playlist_id);
+    functions.playlistToText (currentAccessToken, req.body.playlist_id);
 });
 
 app.listen(8000);
