@@ -4,102 +4,105 @@
 const fs = require("fs");
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-const add_song = function (
-    access_token,
-    song_info,
-    song_promise,
-    playlist_id,
+/**
+ * Adds the specified song into the targeted Spotify playlist if the mp3 information and Spotify information matches.
+ * @param {String} accessToken Access token from Spotify.
+ * @param {Object} songInfo 2D list of strings containing the artist, title, and album.
+ * @param {Promise} songPromise The search Promise of the song.
+ * @param {String} playlistID ID of the playlist.
+ * @param {Number} counter Index of the song.
+ */
+const addSong = function (
+    accessToken,
+    songInfo,
+    songPromise,
+    playlistID,
     counter
 ) {
     if (counter % 5 == 0) {
         sleep(500);
     }
 
-    song_promise.then((response_text) => {
+    songPromise.then((responseText) => {
         if (counter % 100 == 0) {
             console.log("adding song: " + counter);
         }
 
         try {
-            json_text = JSON.parse(response_text);
-            track = json_text.tracks.items;
+            jsonObject = JSON.parse(responseText);
+            track = jsonObject.tracks.items;
 
             if (track != null) {
-                var song_id = track[0].id;
+                var songID = track[0].id;
                 var artist = track[0].artists[0].name;
                 var title = track[0].name;
 
                 if (
-                    artist.toLowerCase() == song_info[1].toLowerCase() &&
-                    title.toLowerCase() == song_info[0].toLowerCase()
+                    artist.toLowerCase() == songInfo[1].toLowerCase() &&
+                    title.toLowerCase() == songInfo[0].toLowerCase()
                 ) {
                     new Promise(function (resolve, reject) {
                         var xmlHttp = new XMLHttpRequest();
                         xmlHttp.open(
                             "POST",
                             "https://api.spotify.com/v1/playlists/" +
-                                playlist_id +
+                                playlistID +
                                 "/tracks?uris=spotify%3Atrack%3A" +
-                                song_id,
+                                songID,
                             false
                         ); // false for synchronous request
                         xmlHttp.setRequestHeader(
                             "Authorization",
-                            "Bearer " + access_token
+                            "Bearer " + accessToken
                         );
                         xmlHttp.setRequestHeader("Accept: application/json");
                         xmlHttp.send();
 
                         resolve(xmlHttp.responseText);
                     }).then((output) => {
-                        list_song_info(song_info, true);
+                        listSongInfo(songInfo, true);
                     });
                 } else {
-                    list_song_info(song_info, false);
+                    listSongInfo(songInfo, false);
                 }
             } else {
-                list_song_info(song_info, false);
+                listSongInfo(songInfo, false);
             }
         } catch (error) {
             console.log(error);
-            console.log(song_info);
-            list_song_info(song_info, false);
+            console.log(songInfo);
+            listSongInfo(songInfo, false);
         }
     });
 };
 
-const list_playlist_song = function (playlist_info) {
-    console.log("printing playlist to text");
-    console.log(playlist_info);
+/**
+ * Generates a random string containing numbers and letters.
+ * @param  {Number} length The length of the string.
+ * @return {String} The generated string.
+ */
+const generateRandomString = function (length) {
+    var text = "";
+    var possible =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for (let i = 0; i < playlist_info.length; i++) {
-        if (i % 100 == 0) {
-            console.log("printing song: " + i);
-        }
-
-        var text =
-            playlist_info[i][0] +
-            " - " +
-            playlist_info[i][1] +
-            " - " +
-            playlist_info[i][2] +
-            "\n";
-        fs.appendFile("../output/SongList.txt", text, function (error, result) {
-            if (error) {
-                console.log("Error:", e.stack);
-            }
-        });
+    for (var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-
-    console.log("Done");
+    return text;
 };
 
-const list_song_info = function (song_info, found) {
+/**
+ * Adds the song information to different text file depending if it was found or not.
+ * @param {Object} songInfo 2D list of strings containing the artist, title, and album.
+ * @param {Boolean} found Tells whether the song is found or not in Spotify.
+ */
+const listSongInfo = function (songInfo, found) {
     var text = "";
 
-    for (var i = 0; i < song_info.length; i++) {
-        if (song_info[i] != undefined) {
-            text = text + song_info[i] + " - ";
+    for (var i = 0; i < songInfo.length; i++) {
+        if (songInfo[i] != undefined) {
+            text = text + songInfo[i] + " - ";
         }
     }
 
@@ -128,7 +131,12 @@ const list_song_info = function (song_info, found) {
     }
 };
 
-const playlist_to_text = function (access_token, playlist_id) {
+/**
+ * Retrieves the playlist, extract the artist, title, and album, and then prints into a text file.
+ * @param {String} accessToken Access token from Spotify.
+ * @param {String} playlistID ID of the playlist.
+ */
+const playlistToText = function (accessToken, playlistID) {
     console.log("starting playlist to text transfer");
 
     // ask how many songs in playlist
@@ -137,12 +145,12 @@ const playlist_to_text = function (access_token, playlist_id) {
         xmlHttp.open(
             "GET",
             "https://api.spotify.com/v1/playlists/" +
-                playlist_id +
+                playlistID +
                 "/tracks?fields=total",
             false
         );
 
-        xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+        xmlHttp.setRequestHeader("Authorization", "Bearer " + accessToken);
         xmlHttp.send();
 
         resolve(xmlHttp.responseText);
@@ -152,11 +160,11 @@ const playlist_to_text = function (access_token, playlist_id) {
             console.log(error);
         })
         // keep asking for the next 100 songs in playlist
-        .then((total_data) => {
-            json_text = JSON.parse(total_data);
-            var song_total = json_text.total;
+        .then((totalData) => {
+            jsonObject = JSON.parse(totalData);
+            var songTotal = jsonObject.total;
 
-            for (var index = 0; index < song_total; index += 100) {
+            for (var index = 0; index < songTotal; index += 100) {
                 console.log("retrieving song: " + index);
 
                 sleep(500);
@@ -165,7 +173,7 @@ const playlist_to_text = function (access_token, playlist_id) {
                     xmlHttp.open(
                         "GET",
                         "https://api.spotify.com/v1/playlists/" +
-                            playlist_id +
+                            playlistID +
                             "/tracks?market=SE&limit=100&offset=" +
                             index,
                         false
@@ -173,7 +181,7 @@ const playlist_to_text = function (access_token, playlist_id) {
 
                     xmlHttp.setRequestHeader(
                         "Authorization",
-                        "Bearer " + access_token
+                        "Bearer " + accessToken
                     );
                     xmlHttp.send();
 
@@ -184,27 +192,27 @@ const playlist_to_text = function (access_token, playlist_id) {
                         console.log(error);
                     })
                     // add the information to a list
-                    .then((playlist_data) => {
-                        json_text = JSON.parse(playlist_data);
-                        var current_song_list = json_text.items;
+                    .then((playlistData) => {
+                        jsonObject = JSON.parse(playlistData);
+                        var currentSongList = jsonObject.items;
 
-                        for (var i = 0; i < current_song_list.length; i++) {
+                        for (var i = 0; i < currentSongList.length; i++) {
                             var artist = "";
                             var title = "";
                             var album = "";
 
                             try {
-                                album = current_song_list[i].track.album.name;
+                                album = currentSongList[i].track.album.name;
                             } catch (error) {
                                 album = "";
                             }
 
                             try {
-                                var artist_list =
-                                    current_song_list[i].track.artists;
+                                var artistList =
+                                    currentSongList[i].track.artists;
 
-                                for (let j = 0; j < artist_list.length; j++) {
-                                    artist += artist_list[j].name;
+                                for (let j = 0; j < artistList.length; j++) {
+                                    artist += artistList[j].name;
                                     artist += ", ";
                                 }
 
@@ -214,7 +222,7 @@ const playlist_to_text = function (access_token, playlist_id) {
                             }
 
                             try {
-                                title = current_song_list[i].track.name;
+                                title = currentSongList[i].track.name;
                             } catch (error) {
                                 title = "";
                             }
@@ -238,10 +246,16 @@ const playlist_to_text = function (access_token, playlist_id) {
         });
 };
 
-const search_song = function (access_token, song_list, playlist_id) {
+/**
+ * Searches the song on Spotify and then calls addSong.
+ * @param {String} accessToken Access token from Spotify.
+ * @param {List} songList 2D list of strings containing the artist, title, and album.
+ * @param {String} playlistID ID of the playlist.
+ */
+const searchSong = function (accessToken, songList, playlistID) {
     console.log("starting song search");
 
-    for (var i = 0; i < song_list.length; i++) {
+    for (var i = 0; i < songList.length; i++) {
         if (i % 5 == 0) {
             sleep(1000);
         }
@@ -249,31 +263,31 @@ const search_song = function (access_token, song_list, playlist_id) {
             console.log("search song: " + i);
         }
 
-        var search_text = "";
+        var searchText = "";
 
-        for (var j = 0; j < song_list[i].length; j++) {
-            if (song_list[i][j] != null) {
-                var text = song_list[i][j];
-                var ascii_text = text.replace(/[^\x00-\x7F]/g, "");
-                var replaced_text = ascii_text.split(" ").join("%20");
-                if (j < song_list[i].length - 1) {
-                    search_text = search_text + replaced_text + "%20";
+        for (var j = 0; j < songList[i].length; j++) {
+            if (songList[i][j] != null) {
+                var text = songList[i][j];
+                var asciiText = text.replace(/[^\x00-\x7F]/g, "");
+                var replacedText = asciiText.split(" ").join("%20");
+                if (j < songList[i].length - 1) {
+                    searchText = searchText + replacedText + "%20";
                 } else {
-                    search_text = search_text + replaced_text;
+                    searchText = searchText + replacedText;
                 }
             }
         }
 
-        var song_promise = new Promise(function (resolve, reject) {
+        var songPromise = new Promise(function (resolve, reject) {
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open(
                 "GET",
                 "https://api.spotify.com/v1/search?q=" +
-                    search_text +
+                    searchText +
                     "&type=track&offset=0&limit=1",
                 false
             ); // false for synchronous request
-            xmlHttp.setRequestHeader("Authorization", "Bearer " + access_token);
+            xmlHttp.setRequestHeader("Authorization", "Bearer " + accessToken);
             xmlHttp.send();
 
             resolve(xmlHttp.responseText);
@@ -281,10 +295,14 @@ const search_song = function (access_token, song_list, playlist_id) {
             console.log(error);
         });
 
-        add_song(access_token, song_list[i], song_promise, playlist_id, i);
+        addSong(accessToken, songList[i], songPromise, playlistID, i);
     }
 };
 
+/**
+ * A sleep function in milliseconds.
+ * @param {Number} milliseconds Number of milliseconds.
+ */
 const sleep = function (milliseconds) {
     const date = Date.now();
     let currentDate = null;
@@ -294,9 +312,8 @@ const sleep = function (milliseconds) {
 };
 
 module.exports = {
-    add_song,
-    list_song_info,
-    playlist_to_text,
-    search_song,
+    generateRandomString,
+    playlistToText,
+    searchSong,
     sleep,
 };
