@@ -12,7 +12,7 @@
 ## Description
 Spotify automation program with multiple functions.  
 * Takes local mp3 files and adds them to spotify playlist by searching the artist and title. If it is not found, it will add the information into a text file for the user to add manually to their playlist. Also shows the information of songs that were added into the playlist into another text file.  
-* Backup your playlist on Spotify into a text file with information of the artist, title of the song, and album.
+* Backup your playlist on Spotify into a text file with information of the artist, title of the song, and album. The text file produced will be located in the `output` folder.
 
 <a name="requirements"></a>
 ## Requirements
